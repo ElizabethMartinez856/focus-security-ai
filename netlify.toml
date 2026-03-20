@@ -1,4 +1,13 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
 [[redirects]]
   from = "/ollama/*"
+  to = "/.netlify/functions/proxy/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/.netlify/functions/proxy/*"
   to = "/.netlify/functions/proxy/:splat"
   status = 200
