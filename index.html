@@ -459,7 +459,7 @@ function getHeaders(withContentType) {
 }
 
 function getUrl(path) {
-  if(IS_REMOTE && usingNgrok) return `/.netlify/functions/proxy${path}`;
+  if(IS_REMOTE && usingNgrok) { const t=encodeURIComponent(settings.ollamaUrl); return `/.netlify/functions/proxy${path}?target=${t}`; }
   return `${settings.ollamaUrl}${path}`;
 }
 
