@@ -427,7 +427,16 @@ async function testNgrokUrl() {
   if(!url){res.style.color='var(--red)';res.textContent='✕ Ingresa una URL primero';return;}
   res.style.color='var(--text-muted)';res.textContent='⟳ Probando conexión…';
   try {
-    const r=await fetch(`${url}/api/tags`,{signal:AbortSignal.timeout(8000),headers:{'ngrok-skip-browser-warning':'true'}});
+    // En Netlify siempre usamos el proxy para evitar CORS con ngrok
+    let fetchUrl, fetchHeaders={};
+    if(IS_REMOTE){
+      fetchUrl='/.netlify/functions/proxy/api/tags';
+      fetchHeaders={'x-ollama-url':url};
+    } else {
+      fetchUrl=`${url}/api/tags`;
+      fetchHeaders={'ngrok-skip-browser-warning':'true'};
+    }
+    const r=await fetch(fetchUrl,{signal:AbortSignal.timeout(8000),headers:fetchHeaders});
     if(r.ok){const d=await r.json();res.style.color='var(--green)';res.textContent=`✓ Conectado — ${(d.models||[]).length} modelo(s) disponible(s)`;}
     else throw new Error('HTTP '+r.status);
   } catch(e){res.style.color='var(--red)';res.textContent=`✕ Sin conexión: ${e.message}`;}
@@ -459,7 +468,7 @@ function getHeaders(withContentType) {
 }
 
 function getUrl(path) {
-  if(IS_REMOTE && usingNgrok) { const t=encodeURIComponent(settings.ollamaUrl); return `/.netlify/functions/proxy${path}?target=${t}`; }
+  if(IS_REMOTE && usingNgrok) return `/.netlify/functions/proxy${path}`;
   return `${settings.ollamaUrl}${path}`;
 }
 
@@ -690,7 +699,16 @@ async function testConnection(){
   const res=document.getElementById('conn-result');res.style.display='block';res.style.color='var(--text-muted)';res.textContent='⟳ Probando…';
   try{
     const isNg=url.startsWith('https://')&&url!==LOCAL_URL;
-    const r=await fetch(`${url}/api/tags`,{signal:AbortSignal.timeout(7000),headers:isNg?{'ngrok-skip-browser-warning':'true'}:{}});
+    // Si estamos en Netlify (HTTPS) y la URL es ngrok, usamos el proxy para evitar CORS
+    let fetchUrl, fetchHeaders={};
+    if(IS_REMOTE && isNg){
+      fetchUrl='/.netlify/functions/proxy/api/tags';
+      fetchHeaders={'x-ollama-url':url};
+    } else {
+      fetchUrl=`${url}/api/tags`;
+      if(isNg) fetchHeaders={'ngrok-skip-browser-warning':'true'};
+    }
+    const r=await fetch(fetchUrl,{signal:AbortSignal.timeout(7000),headers:fetchHeaders});
     if(r.ok){const d=await r.json();res.style.color='var(--green)';res.textContent=`✓ Conectado — ${(d.models||[]).length} modelo(s)`;}
     else throw new Error('HTTP '+r.status);
   }catch(e){res.style.color='var(--red)';res.textContent=`✕ Sin conexión: ${e.message}`;}
