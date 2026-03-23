@@ -9,8 +9,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a26;--surface3:#22223a;
-    --border:#2a2a44;--accent:#7c6bff;--accent2:#ff6b9d;--accent3:#6bffda;
+    --bg:#000000;--surface:#12121a;--surface2:#1a1a26;--surface3:#22223a;
+    --border:#2a2a44;--accent:#794464;--accent2:#cb8292;--accent3:#592860;
     --text:#e8e8f0;--text-muted:#6b6b8a;--text-dim:#9090b0;
     --user-bubble:#1e1e35;--ai-bubble:#141420;
     --green:#6bffda;--red:#ff6b6b;--yellow:#ffd76b;--orange:#ffaa6b;
@@ -211,7 +211,7 @@
       <button class="ng-test-btn" onclick="testNgrokUrl()">Probar</button>
     </div>
     <div id="ngrok-test-result"></div>
-    <button class="ng-connect-btn" onclick="connectNgrok()">⚡ Conectar y comenzar</button>
+    <button class="ng-connect-btn" onclick="connectNgrok()"> Conectar y comenzar</button>
     <div class="ng-skip"><a onclick="skipNgrok()">Configurar manualmente en ajustes →</a></div>
   </div>
 </div>
@@ -220,7 +220,7 @@
 
 <aside id="sidebar">
   <div class="sidebar-header">
-    <div class="logo">Focus<span>AI</span></div>
+    <div class="logo"><img src="loguitofocus.png" width="40">FOCUS<span>AI</span></div>
     <button class="new-chat-btn" onclick="newChat()"><span>✦</span> Nueva conversación</button>
   </div>
   <div class="sidebar-section">Historial</div>
@@ -264,8 +264,7 @@
 
   <div id="chat-area">
     <div id="welcome">
-      <div class="welcome-icon">🛡</div>
-      <div class="welcome-title">FocusAI</div>
+      <div class="welcome-icon"><img src="loguitofocus.png" width="300"></div>
       <div class="welcome-sub">Tu asistente de seguridad con voz.<br>Habla o escribe para comenzar.</div>
     </div>
   </div>
@@ -292,36 +291,36 @@
 <div id="settings-overlay" onclick="closeSettingsOut(event)">
   <div id="settings-modal">
     <div class="modal-header">
-      <div class="modal-title">⚙ Personalización</div>
+      <div class="modal-title"><img src="loguitofocus.png" width="50"> Personalización</div>
       <button class="modal-close" onclick="closeSettings()">✕</button>
     </div>
     <div class="setting-group">
-      <div class="setting-label">🔌 URL del Servidor Ollama</div>
+      <div class="setting-label">URL del Servidor Ollama</div>
       <div class="url-test-row">
         <input type="text" id="s-ollama-url" class="setting-input" placeholder="https://xxxx.ngrok-free.app" style="flex:1">
         <button class="test-conn-btn" onclick="testConnection()">Probar</button>
       </div>
       <div id="conn-result"></div>
-      <div class="info-box">💡 Pega aquí tu URL de ngrok para usar desde Netlify.<br>O usa <strong>http://localhost:11434</strong> si lo abres localmente.</div>
+      <div class="info-box">Pega aquí tu URL de ngrok para usar desde Netlify.<br>O usa <strong>http://localhost:11434</strong> si lo abres localmente.</div>
     </div>
     <hr class="section-divider">
     <div class="setting-group">
-      <div class="setting-label">🤖 Nombre del Asistente</div>
+      <div class="setting-label">Nombre del Asistente</div>
       <input type="text" id="s-ai-name" class="setting-input" placeholder="Ej: FOCUS, Nova, Max…">
     </div>
     <div class="setting-group">
-      <div class="setting-label">📝 System Prompt (Personalidad)</div>
+      <div class="setting-label">System Prompt (Personalidad)</div>
       <textarea id="s-system-prompt" class="setting-input" rows="4" placeholder="Eres FOCUS un Asistente virtual de Seguridad..."></textarea>
     </div>
     <div class="setting-group">
-      <div class="setting-label">🌡 Temperature <span style="font-size:10px;color:var(--text-muted)">(creatividad)</span></div>
+      <div class="setting-label">Temperature <span style="font-size:10px;color:var(--text-muted)">(creatividad)</span></div>
       <div class="range-wrap">
         <input type="range" id="s-temperature" min="0" max="2" step="0.1" value="0.7" oninput="document.getElementById('s-temp-val').textContent=this.value">
         <span class="range-val" id="s-temp-val">0.7</span>
       </div>
     </div>
     <div class="setting-group">
-      <div class="setting-label">📏 Max Tokens</div>
+      <div class="setting-label">Max Tokens</div>
       <div class="range-wrap">
         <input type="range" id="s-max-tokens" min="100" max="4000" step="100" value="1000" oninput="document.getElementById('s-tokens-val').textContent=this.value">
         <span class="range-val" id="s-tokens-val">1000</span>
@@ -329,7 +328,7 @@
     </div>
     <hr class="section-divider">
     <div class="setting-group">
-      <div class="setting-label">🔊 Voz del Asistente</div>
+      <div class="setting-label">Voz del Asistente</div>
       <div class="setting-row">
         <select id="s-voice" class="voice-selector" style="flex:1"></select>
         <button class="test-voice-btn" onclick="testVoice()">▶ Probar</button>
