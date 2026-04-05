@@ -426,7 +426,6 @@ async function testNgrokUrl() {
   if(!url){res.style.color='var(--red)';res.textContent='✕ Ingresa una URL primero';return;}
   res.style.color='var(--text-muted)';res.textContent='⟳ Probando conexión…';
   try {
-    // En Netlify siempre usamos el proxy para evitar CORS con ngrok
     let fetchUrl, fetchHeaders={};
     if(IS_REMOTE){
       fetchUrl='/.netlify/functions/proxy/api/tags';
@@ -549,7 +548,9 @@ function buildMsgHTML(role,content,idx,isVoice){
   const badge=isVoice?'<span class="transcript-badge">🎙 VOZ</span>':'';
   const ttsBtn=isAI?`<button class="tts-btn" onclick="speakMsg(${idx})" id="tts-${idx}">▶ escuchar</button>`:'';
   const acts=`<div class="msg-actions"><button class="msg-act-btn" onclick="copyMsg(${idx})">📋 copiar</button>${isAI?`<button class="msg-act-btn" onclick="regenerate(${idx})">↺ regenerar</button>`:''}</div>`;
-  return`<div class="msg-row ${isAI?'':'user'}" id="msg-${idx}"><div class="avatar ${isAI?'ai':'user'}">${av}</div><div class="msg-content"><div class="msg-meta"><span>${name}</span>${badge}${ttsBtn}</div><div class="msg-bubble ${isAI?'ai':'user'}">${escH(content)}</div>${acts}</div></div>`;
+  // Use renderMarkdown for AI messages, escH for user messages
+  const bubbleContent = isAI ? renderMarkdown(content) : escH(content);
+  return`<div class="msg-row ${isAI?'':'user'}" id="msg-${idx}"><div class="avatar ${isAI?'ai':'user'}">${av}</div><div class="msg-content"><div class="msg-meta"><span>${name}</span>${badge}${ttsBtn}</div><div class="msg-bubble ${isAI?'ai':'user'}">${bubbleContent}</div>${acts}</div></div>`;
 }
 
 function appendMsgRow(role,content,isVoice){
@@ -564,7 +565,7 @@ function addThinkingBubble(){
   row.innerHTML=`<div class="avatar ai">🛡</div><div class="msg-content"><div class="msg-meta">${escH(settings.aiName)}</div><div class="msg-bubble ai thinking-bubble"><div class="thinking-dot"></div><div class="thinking-dot"></div><div class="thinking-dot"></div></div></div>`;
   area.appendChild(row);area.scrollTop=area.scrollHeight;
 }
-function updateThinkingBubble(t){const r=document.getElementById('thinking-row');if(!r)return;r.querySelector('.msg-bubble').textContent=t;document.getElementById('chat-area').scrollTop=9999;}
+function updateThinkingBubble(t){const r=document.getElementById('thinking-row');if(!r)return;r.querySelector('.msg-bubble').innerHTML=renderMarkdown(t)+'<span style="opacity:.5">▌</span>';document.getElementById('chat-area').scrollTop=9999;}
 function removeThinkingBubble(){const r=document.getElementById('thinking-row');if(r)r.remove();}
 function setStatusThinking(on){
   const dot=document.getElementById('ollama-dot'),txt=document.getElementById('ollama-status-text');
@@ -587,7 +588,7 @@ async function sendMessage(userText,isVoice){
     while(true){
       const{done,value}=await reader.read();if(done)break;
       for(const line of dec.decode(value,{stream:true}).split('\n').filter(Boolean)){
-        try{const obj=JSON.parse(line);if(obj.message?.content){full+=obj.message.content;updateThinkingBubble(full+'▌');}}catch{}
+        try{const obj=JSON.parse(line);if(obj.message?.content){full+=obj.message.content;updateThinkingBubble(full);}}catch{}
       }
     }
     removeThinkingBubble();pushMessage('assistant',full);appendMsgRow('assistant',full);setStatusThinking(false);
@@ -609,6 +610,35 @@ function buildOllamaMessages(){
 
 function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}}
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+
+// ══ MARKDOWN RENDERER ══
+function renderMarkdown(t) {
+  if (!t) return '';
+  return t
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    // Bold + italic combined ***text***
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    // Bold **text**
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    // Italic *text*
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    // Inline code `text`
+    .replace(/`([^`]+)`/g, '<code style="background:var(--surface3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:\'Space Mono\',monospace;font-size:12px;color:var(--accent2);">$1</code>')
+    // Line breaks
+    .replace(/\n/g, '<br>');
+}
+
+// escH stays simple for user messages and non-content uses
+function escH(t) {
+  if (!t) return '';
+  return t
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br>');
+}
 
 // ══ SPEECH ══
 function initSpeechRecognition(){
@@ -698,7 +728,6 @@ async function testConnection(){
   const res=document.getElementById('conn-result');res.style.display='block';res.style.color='var(--text-muted)';res.textContent='⟳ Probando…';
   try{
     const isNg=url.startsWith('https://')&&url!==LOCAL_URL;
-    // Si estamos en Netlify (HTTPS) y la URL es ngrok, usamos el proxy para evitar CORS
     let fetchUrl, fetchHeaders={};
     if(IS_REMOTE && isNg){
       fetchUrl='/.netlify/functions/proxy/api/tags';
